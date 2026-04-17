@@ -1,0 +1,99 @@
+spring:
+  application:
+    name: parkcontrol
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:h2:mem:parkcontrol
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    com.parkcontrol: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+app:
+  externo:
+    persona-url: http://localhost:9999/api/personas
+    vehiculo-url: http://localhost:9999/api/vehiculos
+    timeout: 5000
+  upload:
+    path: ./uploads
+    max-size: 10485760
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/parkcontrol}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:parkcontrol}
+    password: ${DB_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    root: WARN
+    com.parkcontrol: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: INFO
+  file:
+    name: logs/parkcontrol.log
+    max-size: 10MB
+    max-history: 30
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+app:
+  externo:
+    persona-url: ${EXTERNO_PERSONA_URL:http://external-api/personas}
+    vehiculo-url: ${EXTERNO_VEHICULO_URL:http://external-api/vehiculos}
+    timeout: ${EXTERNO_TIMEOUT:5000}
+  upload:
+    path: ${UPLOAD_PATH:/var/parkcontrol/uploads}
+    max-size: 10485760
