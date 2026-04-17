@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "ParkControl API",
-    "description": "Colección de endpoints del sistema ParkControl. Esta colección se actualiza cada vez que se agrega un nuevo endpoint.",
+    "description": "Colección de endpoints del sistema ParkControl. Actualizada con todos los endpoints del MVP.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -9,7 +9,264 @@
       "key": "baseUrl",
       "value": "http://localhost:8080/api/v1",
       "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
     }
   ],
-  "item": []
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cambiar Contraseña",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/cambiar-password",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passwordActual\": \"admin123\",\n  \"passwordNuevo\": \"nuevaPass123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Crear Usuario (ADMIN)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/usuarios",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"operario01\",\n  \"password\": \"pass123\",\n  \"rol\": \"OPERARIO\",\n  \"personaId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/usuarios?page=0&size=10",
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          }
+        },
+        {
+          "name": "Cambiar Estado Usuario",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/usuarios/2/estado",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"INACTIVO\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tipos de Evidencia",
+      "item": [
+        {
+          "name": "Listar Tipos de Evidencia",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tipos-evidencia",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          }
+        },
+        {
+          "name": "Crear Tipo de Evidencia (ADMIN)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/tipos-evidencia",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Foto Panorámica\",\n  \"descripcion\": \"Vista panorámica del vehículo\",\n  \"orden\": 8\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tarifas",
+      "item": [
+        {
+          "name": "Listar Tarifas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tarifas",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          }
+        },
+        {
+          "name": "Crear Tarifa (ADMIN)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/tarifas",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoVehiculo\": \"AUTOMOVIL\",\n  \"tipoAcceso\": \"MENSUAL\",\n  \"valor\": 350000\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ingresos",
+      "item": [
+        {
+          "name": "Registrar Ingreso",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/ingresos",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-Usuario", "value": "operario01" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"ABC123\",\n  \"tipoVehiculo\": \"AUTOMOVIL\",\n  \"marca\": \"TOYOTA\",\n  \"modelo\": 2021,\n  \"referencia\": \"COROLLA\",\n  \"color\": \"BLANCO\",\n  \"servicio\": \"PARTICULAR\",\n  \"tipoDocumentoConductor\": \"CC\",\n  \"numeroDocumentoConductor\": \"12345678\",\n  \"tipoAcceso\": \"HORA\",\n  \"cupoAsignado\": \"A-15\",\n  \"kilometraje\": \"45000\",\n  \"motivoIngreso\": \"Trabajo\",\n  \"observaciones\": \"Cliente frecuente\",\n  \"firmaConductor\": true,\n  \"firmaOperario\": true,\n  \"inventarioExterior\": {\n    \"parachoquesDelantero\": false,\n    \"parachoquesTrasero\": false,\n    \"puertas\": false,\n    \"espejos\": false,\n    \"vidrios\": false,\n    \"luces\": false,\n    \"llantas\": false,\n    \"rayones\": true,\n    \"golpes\": false,\n    \"observaciones\": \"Rayón en puerta\"\n  },\n  \"inventarioInterior\": {\n    \"tapiceria\": false,\n    \"tablero\": false,\n    \"radioPantalla\": false,\n    \"alfombras\": true,\n    \"cinturones\": false,\n    \"elementosPersonales\": false,\n    \"observaciones\": \"Alfombra manchada\"\n  },\n  \"inventarioSeguridad\": {\n    \"llantaRepuesto\": true,\n    \"gato\": true,\n    \"cruceta\": true,\n    \"extintor\": false,\n    \"botiquin\": true,\n    \"triangulos\": true,\n    \"herramientas\": true\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Buscar Ingreso Activo por Placa",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/ingresos/activo?placa=ABC123",
+              "query": [
+                { "key": "placa", "value": "ABC123" }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          }
+        },
+        {
+          "name": "Listar Ingresos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/ingresos?page=0&size=10",
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          }
+        },
+        {
+          "name": "Obtener Detalle de Ingreso",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ingresos/1",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Salidas",
+      "item": [
+        {
+          "name": "Registrar Salida",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/salidas",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-Usuario", "value": "operario01" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ingresoId\": 1,\n  \"personaRetira\": \"Juan Pérez\",\n  \"documentoRetira\": \"12345678\",\n  \"observaciones\": \"Cliente满意的\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener Detalle de Salida",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/salidas/1",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
 }
