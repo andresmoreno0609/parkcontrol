@@ -16,13 +16,13 @@ public class CambiarPasswordUseCase {
 
     public void execute(Long usuarioId, CambiarPasswordRequest request) {
         // Validaciones en preConditions
-        if (request.passwordActual() == null || request.passwordActual().isBlank()) {
+        if (request.getPasswordActual() == null || request.getPasswordActual().isBlank()) {
             throw new IllegalArgumentException("La contraseña actual es requerida");
         }
-        if (request.passwordNuevo() == null || request.passwordNuevo().isBlank()) {
+        if (request.getPasswordNuevo() == null || request.getPasswordNuevo().isBlank()) {
             throw new IllegalArgumentException("La contraseña nueva es requerida");
         }
-        if (request.passwordNuevo().length() < 6) {
+        if (request.getPasswordNuevo().length() < 6) {
             throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
         }
 
@@ -31,11 +31,11 @@ public class CambiarPasswordUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         // Validar password actual
-        if (!passwordEncoder.matches(request.passwordActual(), usuario.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.getPasswordActual(), usuario.getPasswordHash())) {
             throw new IllegalArgumentException("La contraseña actual es incorrecta");
         }
 
         // Cambiar password
-        usuarioService.cambiarPassword(usuarioId, request.passwordNuevo());
+        usuarioService.cambiarPassword(usuarioId, request.getPasswordNuevo());
     }
 }

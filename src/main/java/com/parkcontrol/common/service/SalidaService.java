@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,10 +37,10 @@ public class SalidaService {
 
     @Transactional
     public SalidaResponse create(SalidaRequest request, String usuarioRegistro) {
-        log.info("Registrando salida para ingreso ID: {}", request.ingresoId());
+        log.info("Registrando salida para ingreso ID: {}", request.getIngresoId());
 
         // 1. Validar que el ingreso existe y está activo
-        Ingreso ingreso = ingresoRepository.findById(request.ingresoId())
+        Ingreso ingreso = ingresoRepository.findById(request.getIngresoId())
                 .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado"));
 
         if (!"ACTIVO".equals(ingreso.getEstado())) {
@@ -49,7 +48,7 @@ public class SalidaService {
         }
 
         // 2. Validar que no exista salida ya
-        if (salidaRepository.existsByIngresoId(request.ingresoId())) {
+        if (salidaRepository.existsByIngresoId(request.getIngresoId())) {
             throw new IllegalArgumentException("Ya existe una salida para este ingreso");
         }
 
@@ -59,12 +58,12 @@ public class SalidaService {
 
         // 4. Crear salida
         Salida salida = Salida.builder()
-                .ingresoId(request.ingresoId())
+                .ingresoId(request.getIngresoId())
                 .fechaSalida(LocalDate.now())
                 .horaSalida(LocalTime.now())
-                .personaRetira(request.personaRetira())
-                .documentoRetira(request.documentoRetira())
-                .observaciones(request.observaciones())
+                .personaRetira(request.getPersonaRetira())
+                .documentoRetira(request.getDocumentoRetira())
+                .observaciones(request.getObservaciones())
                 .montoPagado(monto)
                 .usuarioRegistro(usuarioRegistro)
                 .build();
@@ -73,31 +72,31 @@ public class SalidaService {
         log.debug("Salida guardada con ID: {}", savedSalida.getId());
 
         // 5. Actualizar estado del ingreso a EXITO
-        ingresoService.actualizarEstado(request.ingresoId(), "EXITO");
+        ingresoService.actualizarEstado(request.getIngresoId(), "EXITO");
 
         // 6. Guardar checklists de salida (opcional)
-        if (request.inventarioExterior() != null) {
-            InventarioExterior ext = mapToInventarioExterior(request.inventarioExterior(), savedSalida.getId());
-            inventarioExteriorRepository.save(ext);
+        if (request.getInventarioExterior() != null) {
+            InventarioExterior ext = mapToInventarioExterior(request, savedSalida.getId());
+            if (ext != null) inventarioExteriorRepository.save(ext);
         }
 
-        if (request.inventarioInterior() != null) {
-            InventarioInterior inter = mapToInventarioInterior(request.inventarioInterior(), savedSalida.getId());
-            inventarioInteriorRepository.save(inter);
+        if (request.getInventarioInterior() != null) {
+            InventarioInterior inter = mapToInventarioInterior(request, savedSalida.getId());
+            if (inter != null) inventarioInteriorRepository.save(inter);
         }
 
-        if (request.inventarioSeguridad() != null) {
-            InventarioSeguridad seg = mapToInventarioSeguridad(request.inventarioSeguridad(), savedSalida.getId());
-            inventarioSeguridadRepository.save(seg);
+        if (request.getInventarioSeguridad() != null) {
+            InventarioSeguridad seg = mapToInventarioSeguridad(request, savedSalida.getId());
+            if (seg != null) inventarioSeguridadRepository.save(seg);
         }
 
         // 7. Guardar evidencias de salida (si hay)
-        if (request.evidencias() != null && !request.evidencias().isEmpty()) {
-            for (EvidenciaRequest evReq : request.evidencias()) {
+        if (request.getEvidencias() != null && !request.getEvidencias().isEmpty()) {
+            for (EvidenciaRequest evReq : request.getEvidencias()) {
                 EvidenciaSalida ev = EvidenciaSalida.builder()
                         .salidaId(savedSalida.getId())
-                        .tipoId(evReq.tipoId())
-                        .rutaArchivo(evReq.rutaArchivo())
+                        .tipoId(evReq.getTipoId())
+                        .rutaArchivo(evReq.getRutaArchivo())
                         .build();
                 evidenciaSalidaRepository.save(ev);
             }
@@ -125,12 +124,6 @@ public class SalidaService {
         Ingreso ingreso = ingresoRepository.findById(salida.getIngresoId())
                 .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado"));
 
-        Optional<Vehiculo> vehiculo = ingresoRepository.findById(ingreso.getId())
-                .map(i -> null); //-placeholder
-
-        // Obtener vehículo y persona del ingreso
-        // Nota: aquí necesitaríamos los servicios correspondientes
-
         List<EvidenciaSalida> evidencias = evidenciaSalidaRepository.findBySalidaId(id);
 
         // Calcular tiempo total
@@ -143,7 +136,7 @@ public class SalidaService {
                 .id(salida.getId())
                 .ingresoId(salida.getIngresoId())
                 .numeroRegistro(ingreso.getNumeroRegistro())
-                .placa("") // TODO: obtener del vehículo
+                .placa("")
                 .fechaIngreso(ingreso.getFechaIngreso())
                 .horaIngreso(ingreso.getHoraIngreso())
                 .fechaSalida(salida.getFechaSalida())
@@ -159,18 +152,13 @@ public class SalidaService {
     }
 
     private BigDecimal calcularMonto(Ingreso ingreso) {
-        // Por ahora, si es tipo HORA calculamos por horas
-        // TODO: implementar lógica completa de tarifas
-
         if ("MENSUAL".equals(ingreso.getTipoAcceso())) {
-            // Tarifas mensuales se pagan por mes completo
             Optional<BigDecimal> tarifa = tarifaService.findByTipoVehiculoAndTipoAcceso(
                     "AUTOMOVIL", "MENSUAL"
             ).map(t -> t.getValor());
             return tarifa.orElse(BigDecimal.ZERO);
         }
 
-        // Para otros tipos, buscar tarifa
         Optional<BigDecimal> tarifa = tarifaService.findByTipoVehiculoAndTipoAcceso(
                 "AUTOMOVIL", ingreso.getTipoAcceso()
         ).map(t -> t.getValor());
@@ -188,46 +176,52 @@ public class SalidaService {
                 .build();
     }
 
-    private InventarioExterior mapToInventarioExterior(SalidaRequest.InventarioExteriorRequest req, Long salidaId) {
+    private InventarioExterior mapToInventarioExterior(SalidaRequest req, Long salidaId) {
+        InventarioExteriorRequest inv = req.getInventarioExterior();
+        if (inv == null) return null;
         return InventarioExterior.builder()
-                .ingresoId(salidaId) // reutilizamos, pero es de salida
-                .parachoquesDelantero(boolOrDefault(req.parachoquesDelantero(), false))
-                .parachoquesTrasero(boolOrDefault(req.parachoquesTrasero(), false))
-                .puertas(boolOrDefault(req.puertas(), false))
-                .espejos(boolOrDefault(req.espejos(), false))
-                .vidrios(boolOrDefault(req.vidrios(), false))
-                .luces(boolOrDefault(req.luces(), false))
-                .llantas(boolOrDefault(req.llantas(), false))
-                .rayones(boolOrDefault(req.rayones(), false))
-                .golpes(boolOrDefault(req.golpes(), false))
-                .observaciones(req.observaciones())
+                .ingresoId(salidaId)
+                .parachoquesDelantero(boolOrDefault(inv.getParachoquesDelantero(), false))
+                .parachoquesTrasero(boolOrDefault(inv.getParachoquesTrasero(), false))
+                .puertas(boolOrDefault(inv.getPuertas(), false))
+                .espejos(boolOrDefault(inv.getEspejos(), false))
+                .vidrios(boolOrDefault(inv.getVidrios(), false))
+                .luces(boolOrDefault(inv.getLuces(), false))
+                .llantas(boolOrDefault(inv.getLlantas(), false))
+                .rayones(boolOrDefault(inv.getRayones(), false))
+                .golpes(boolOrDefault(inv.getGolpes(), false))
+                .observaciones(inv.getObservaciones())
                 .build();
     }
 
-    private InventarioInterior mapToInventarioInterior(SalidaRequest.InventarioInteriorRequest req, Long salidaId) {
+    private InventarioInterior mapToInventarioInterior(SalidaRequest req, Long salidaId) {
+        InventarioInteriorRequest inv = req.getInventarioInterior();
+        if (inv == null) return null;
         return InventarioInterior.builder()
                 .ingresoId(salidaId)
-                .tapiceria(boolOrDefault(req.tapiceria(), false))
-                .tablero(boolOrDefault(req.tablero(), false))
-                .radioPantalla(boolOrDefault(req.radioPantalla(), false))
-                .alfombras(boolOrDefault(req.alfombras(), false))
-                .cinturones(boolOrDefault(req.cinturones(), false))
-                .elementosPersonales(boolOrDefault(req.elementosPersonales(), false))
-                .observaciones(req.observaciones())
+                .tapiceria(boolOrDefault(inv.getTapiceria(), false))
+                .tablero(boolOrDefault(inv.getTablero(), false))
+                .radioPantalla(boolOrDefault(inv.getRadioPantalla(), false))
+                .alfombras(boolOrDefault(inv.getAlfombras(), false))
+                .cinturones(boolOrDefault(inv.getCinturones(), false))
+                .elementosPersonales(boolOrDefault(inv.getElementosPersonales(), false))
+                .observaciones(inv.getObservaciones())
                 .build();
     }
 
-    private InventarioSeguridad mapToInventarioSeguridad(SalidaRequest.InventarioSeguridadRequest req, Long salidaId) {
+    private InventarioSeguridad mapToInventarioSeguridad(SalidaRequest req, Long salidaId) {
+        InventarioSeguridadRequest inv = req.getInventarioSeguridad();
+        if (inv == null) return null;
         return InventarioSeguridad.builder()
                 .ingresoId(salidaId)
-                .llantaRepuesto(boolOrDefault(req.llantaRepuesto(), false))
-                .gato(boolOrDefault(req.gato(), false))
-                .cruceta(boolOrDefault(req.cruceta(), false))
-                .extintor(boolOrDefault(req.extintor(), false))
-                .botiquin(boolOrDefault(req.botiquin(), false))
-                .triangulos(boolOrDefault(req.triangulos(), false))
-                .herramientas(boolOrDefault(req.herramientas(), false))
-                .otros(req.otros())
+                .llantaRepuesto(boolOrDefault(inv.getLlantaRepuesto(), false))
+                .gato(boolOrDefault(inv.getGato(), false))
+                .cruceta(boolOrDefault(inv.getCruceta(), false))
+                .extintor(boolOrDefault(inv.getExtintor(), false))
+                .botiquin(boolOrDefault(inv.getBotiquin(), false))
+                .triangulos(boolOrDefault(inv.getTriangulos(), false))
+                .herramientas(boolOrDefault(inv.getHerramientas(), false))
+                .otros(inv.getOtros())
                 .build();
     }
 

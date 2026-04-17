@@ -4,6 +4,7 @@ import com.parkcontrol.common.dto.auth.LoginRequest;
 import com.parkcontrol.common.dto.auth.LoginResponse;
 import com.parkcontrol.common.entity.Usuario;
 import com.parkcontrol.common.service.UsuarioService;
+import com.parkcontrol.config.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -20,15 +21,15 @@ public class LoginUseCase {
 
     public LoginResponse execute(LoginRequest request) {
         // Validaciones en preConditions
-        if (request.username() == null || request.username().isBlank()) {
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
             throw new IllegalArgumentException("El username es requerido");
         }
-        if (request.password() == null || request.password().isBlank()) {
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("La password es requerida");
         }
 
         // Buscar usuario
-        Optional<Usuario> usuarioOpt = usuarioService.findByUsername(request.username());
+        Optional<Usuario> usuarioOpt = usuarioService.findByUsername(request.getUsername());
         if (usuarioOpt.isEmpty()) {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
@@ -41,7 +42,7 @@ public class LoginUseCase {
         }
 
         // Validar password
-        if (!passwordEncoder.matches(request.password(), usuario.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.getPassword(), usuario.getPasswordHash())) {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
 

@@ -37,16 +37,16 @@ public class TarifaService {
     public TarifaResponse create(CrearTarifaRequest request) {
         // Desactivar si existe para el mismo tipo
         tarifaRepository.findByTipoVehiculoAndTipoAccesoAndActivoTrue(
-                request.tipoVehiculo(), request.tipoAcceso()
+                request.getTipoVehiculo(), request.getTipoAcceso()
         ).ifPresent(tarifa -> {
             tarifa.setActivo(false);
             tarifaRepository.save(tarifa);
         });
 
         Tarifa tarifa = Tarifa.builder()
-                .tipoVehiculo(request.tipoVehiculo())
-                .tipoAcceso(request.tipoAcceso())
-                .valor(request.valor())
+                .tipoVehiculo(request.getTipoVehiculo())
+                .tipoAcceso(request.getTipoAcceso())
+                .valor(request.getValor())
                 .activo(true)
                 .build();
 

@@ -26,19 +26,19 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponse create(CrearUsuarioRequest request) {
-        if (usuarioRepository.existsByUsername(request.username())) {
+        if (usuarioRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("El usuario ya existe");
         }
 
-        if (!personaRepository.existsById(request.personaId())) {
+        if (!personaRepository.existsById(request.getPersonaId())) {
             throw new IllegalArgumentException("La persona asociada no existe");
         }
 
         Usuario usuario = Usuario.builder()
-                .username(request.username())
-                .passwordHash(passwordEncoder.encode(request.password()))
-                .rol(request.rol())
-                .personaId(request.personaId())
+                .username(request.getUsername())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .rol(request.getRol())
+                .personaId(request.getPersonaId())
                 .estado("ACTIVO")
                 .build();
 

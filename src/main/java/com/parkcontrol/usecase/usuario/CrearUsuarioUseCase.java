@@ -14,25 +14,25 @@ public class CrearUsuarioUseCase {
 
     public UsuarioResponse execute(CrearUsuarioRequest request) {
         // PreConditions - Validaciones
-        if (request.username() == null || request.username().isBlank()) {
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
             throw new IllegalArgumentException("El username es requerido");
         }
-        if (request.username().length() < 3) {
+        if (request.getUsername().length() < 3) {
             throw new IllegalArgumentException("El username debe tener al menos 3 caracteres");
         }
-        if (request.password() == null || request.password().isBlank()) {
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("La password es requerida");
         }
-        if (request.password().length() < 6) {
+        if (request.getPassword().length() < 6) {
             throw new IllegalArgumentException("La password debe tener al menos 6 caracteres");
         }
-        if (request.rol() == null || request.rol().isBlank()) {
+        if (request.getRol() == null || request.getRol().isBlank()) {
             throw new IllegalArgumentException("El rol es requerido");
         }
-        if (!request.rol().equals("ADMIN") && !request.rol().equals("OPERARIO")) {
+        if (!request.getRol().equals("ADMIN") && !request.getRol().equals("OPERARIO")) {
             throw new IllegalArgumentException("El rol debe ser ADMIN o OPERARIO");
         }
-        if (request.personaId() == null) {
+        if (request.getPersonaId() == null) {
             throw new IllegalArgumentException("La persona asociada es requerida");
         }
 

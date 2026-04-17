@@ -1,13 +1,23 @@
 package com.parkcontrol.common.dto.ingreso;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Builder
-public record InventarioInteriorResponse(
-    Long id,
-    Boolean tapiceria,
-    Boolean tablero,
-    Boolean radioPantalla,
-    Boolean alfombras,
-    Boolean cinturones,
-    Boolean elementosPersonales,
-    String observaciones
-) {}
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class InventarioInteriorResponse {
+    private Long id;
+    private Boolean tapiceria;
+    private Boolean tablero;
+    private Boolean radioPantalla;
+    private Boolean alfombras;
+    private Boolean cinturones;
+    private Boolean elementosPersonales;
+    private String observaciones;
+}

@@ -1,12 +1,23 @@
 package com.parkcontrol.common.dto.ingreso;
 
-public record InventarioSeguridadRequest(
-    Boolean llantaRepuesto,
-    Boolean gato,
-    Boolean cruceta,
-    Boolean extintor,
-    Boolean botiquin,
-    Boolean triangulos,
-    Boolean herramientas,
-    String otros
-) {}
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class InventarioSeguridadRequest {
+    private Boolean llantaRepuesto;
+    private Boolean gato;
+    private Boolean cruceta;
+    private Boolean extintor;
+    private Boolean botiquin;
+    private Boolean triangulos;
+    private Boolean herramientas;
+    private String otros;
+}

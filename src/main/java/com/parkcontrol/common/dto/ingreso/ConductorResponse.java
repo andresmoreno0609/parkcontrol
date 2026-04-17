@@ -1,9 +1,19 @@
 package com.parkcontrol.common.dto.ingreso;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Builder
-public record ConductorResponse(
-    Long id,
-    String nombres,
-    String tipoDocumento,
-    String numeroDocumento
-) {}
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ConductorResponse {
+    private Long id;
+    private String nombres;
+    private String tipoDocumento;
+    private String numeroDocumento;
+}

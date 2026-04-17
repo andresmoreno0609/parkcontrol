@@ -1,6 +1,8 @@
 package com.parkcontrol.common.repository;
 
 import com.parkcontrol.common.entity.Ingreso;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,10 +19,12 @@ public interface IngresoRepository extends JpaRepository<Ingreso, Long> {
 
     boolean existsByNumeroRegistro(String numeroRegistro);
 
-    @Query("SELECT i FROM Ingreso i WHERE i.vehiculo.placa = :placa AND i.estado = 'ACTIVO' ORDER BY i.fechaIngreso DESC, i.horaIngreso DESC")
+    @Query("SELECT i FROM Ingreso i WHERE i.vehiculoId = (SELECT v.id FROM Vehiculo v WHERE v.placa = :placa) AND i.estado = 'ACTIVO' ORDER BY i.fechaIngreso DESC, i.horaIngreso DESC")
     Optional<Ingreso> findFirstByPlacaActivo(@Param("placa") String placa);
 
     List<Ingreso> findByEstado(String estado);
+
+    Page<Ingreso> findByEstado(String estado, Pageable pageable);
 
     @Query("SELECT i FROM Ingreso i WHERE i.fechaIngreso BETWEEN :fechaDesde AND :fechaHasta")
     List<Ingreso> findByFechaIngresoBetween(@Param("fechaDesde") LocalDate fechaDesde, @Param("fechaHasta") LocalDate fechaHasta);

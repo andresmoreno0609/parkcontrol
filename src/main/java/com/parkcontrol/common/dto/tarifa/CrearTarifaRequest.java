@@ -1,9 +1,20 @@
 package com.parkcontrol.common.dto.tarifa;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
-public record CrearTarifaRequest(
-    String tipoVehiculo,
-    String tipoAcceso,
-    BigDecimal valor
-) {}
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CrearTarifaRequest {
+    private String tipoVehiculo;
+    private String tipoAcceso;
+    private BigDecimal valor;
+}

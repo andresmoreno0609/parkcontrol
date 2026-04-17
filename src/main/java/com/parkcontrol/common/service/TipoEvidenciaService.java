@@ -31,9 +31,9 @@ public class TipoEvidenciaService {
     @Transactional
     public TipoEvidenciaResponse create(CrearTipoEvidenciaRequest request) {
         TipoEvidencia tipoEvidencia = TipoEvidencia.builder()
-                .nombre(request.nombre())
-                .descripcion(request.descripcion())
-                .orden(request.orden() != null ? request.orden() : 0)
+                .nombre(request.getNombre())
+                .descripcion(request.getDescripcion())
+                .orden(request.getOrden() != null ? request.getOrden() : 0)
                 .activo(true)
                 .build();
 

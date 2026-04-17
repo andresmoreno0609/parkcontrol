@@ -37,25 +37,25 @@ public class IngresoService {
 
     @Transactional
     public IngresoResponse create(IngresoRequest request, String usuarioRegistro) {
-        log.info("Creando ingreso para placa: {}", request.placa());
+        log.info("Creando ingreso para placa: {}", request.getPlaca());
 
         // 1. Buscar o crear persona (conductor)
         Persona persona = personaService.crearOActualizar(
-                request.tipoDocumentoConductor(),
-                request.numeroDocumentoConductor(),
-                null, null, null, null, null // Los datos vienen del sistema externo si existe
+                request.getTipoDocumentoConductor(),
+                request.getNumeroDocumentoConductor(),
+                null, null, null, null, null
         );
         log.debug("Persona creada/encontrada: {}", persona.getId());
 
         // 2. Buscar o crear vehículo
         Vehiculo vehiculo = vehiculoService.crearOActualizar(
-                request.placa(),
-                request.marca(),
-                request.modelo(),
-                request.referencia(),
-                request.color(),
-                request.tipoVehiculo(),
-                request.servicio()
+                request.getPlaca(),
+                request.getMarca(),
+                request.getModelo(),
+                request.getReferencia(),
+                request.getColor(),
+                request.getTipoVehiculo(),
+                request.getServicio()
         );
         log.debug("Vehículo creado/encontrado: {}", vehiculo.getId());
 
@@ -70,13 +70,13 @@ public class IngresoService {
                 .numeroRegistro(numeroRegistro)
                 .fechaIngreso(LocalDate.now())
                 .horaIngreso(LocalTime.now())
-                .tipoAcceso(request.tipoAcceso())
-                .cupoAsignado(request.cupoAsignado())
-                .kilometraje(request.kilometraje())
-                .motivoIngreso(request.motivoIngreso())
-                .observaciones(request.observaciones())
-                .firmaConductor(request.firmaConductor() != null ? request.firmaConductor() : false)
-                .firmaOperario(request.firmaOperario() != null ? request.firmaOperario() : false)
+                .tipoAcceso(request.getTipoAcceso())
+                .cupoAsignado(request.getCupoAsignado())
+                .kilometraje(request.getKilometraje())
+                .motivoIngreso(request.getMotivoIngreso())
+                .observaciones(request.getObservaciones())
+                .firmaConductor(request.getFirmaConductor() != null ? request.getFirmaConductor() : false)
+                .firmaOperario(request.getFirmaOperario() != null ? request.getFirmaOperario() : false)
                 .estado("ACTIVO")
                 .usuarioRegistro(usuarioRegistro)
                 .build();
@@ -85,28 +85,62 @@ public class IngresoService {
         log.debug("Ingreso guardado con ID: {}", savedIngreso.getId());
 
         // 5. Guardar inventarios
-        if (request.inventarioExterior() != null) {
-            InventarioExterior ext = mapToInventarioExterior(request.inventarioExterior(), savedIngreso.getId());
+        if (request.getInventarioExterior() != null) {
+            InventarioExteriorRequest extReq = request.getInventarioExterior();
+            InventarioExterior ext = InventarioExterior.builder()
+                    .ingresoId(savedIngreso.getId())
+                    .parachoquesDelantero(boolOrDefault(extReq.getParachoquesDelantero(), false))
+                    .parachoquesTrasero(boolOrDefault(extReq.getParachoquesTrasero(), false))
+                    .puertas(boolOrDefault(extReq.getPuertas(), false))
+                    .espejos(boolOrDefault(extReq.getEspejos(), false))
+                    .vidrios(boolOrDefault(extReq.getVidrios(), false))
+                    .luces(boolOrDefault(extReq.getLuces(), false))
+                    .llantas(boolOrDefault(extReq.getLlantas(), false))
+                    .rayones(boolOrDefault(extReq.getRayones(), false))
+                    .golpes(boolOrDefault(extReq.getGolpes(), false))
+                    .observaciones(extReq.getObservaciones())
+                    .build();
             inventarioExteriorRepository.save(ext);
         }
 
-        if (request.inventarioInterior() != null) {
-            InventarioInterior inter = mapToInventarioInterior(request.inventarioInterior(), savedIngreso.getId());
+        if (request.getInventarioInterior() != null) {
+            InventarioInteriorRequest intReq = request.getInventarioInterior();
+            InventarioInterior inter = InventarioInterior.builder()
+                    .ingresoId(savedIngreso.getId())
+                    .tapiceria(boolOrDefault(intReq.getTapiceria(), false))
+                    .tablero(boolOrDefault(intReq.getTablero(), false))
+                    .radioPantalla(boolOrDefault(intReq.getRadioPantalla(), false))
+                    .alfombras(boolOrDefault(intReq.getAlfombras(), false))
+                    .cinturones(boolOrDefault(intReq.getCinturones(), false))
+                    .elementosPersonales(boolOrDefault(intReq.getElementosPersonales(), false))
+                    .observaciones(intReq.getObservaciones())
+                    .build();
             inventarioInteriorRepository.save(inter);
         }
 
-        if (request.inventarioSeguridad() != null) {
-            InventarioSeguridad seg = mapToInventarioSeguridad(request.inventarioSeguridad(), savedIngreso.getId());
+        if (request.getInventarioSeguridad() != null) {
+            InventarioSeguridadRequest segReq = request.getInventarioSeguridad();
+            InventarioSeguridad seg = InventarioSeguridad.builder()
+                    .ingresoId(savedIngreso.getId())
+                    .llantaRepuesto(boolOrDefault(segReq.getLlantaRepuesto(), false))
+                    .gato(boolOrDefault(segReq.getGato(), false))
+                    .cruceta(boolOrDefault(segReq.getCruceta(), false))
+                    .extintor(boolOrDefault(segReq.getExtintor(), false))
+                    .botiquin(boolOrDefault(segReq.getBotiquin(), false))
+                    .triangulos(boolOrDefault(segReq.getTriangulos(), false))
+                    .herramientas(boolOrDefault(segReq.getHerramientas(), false))
+                    .otros(segReq.getOtros())
+                    .build();
             inventarioSeguridadRepository.save(seg);
         }
 
         // 6. Guardar evidencias (si hay)
-        if (request.evidencias() != null && !request.evidencias().isEmpty()) {
-            for (EvidenciaRequest evReq : request.evidencias()) {
+        if (request.getEvidencias() != null && !request.getEvidencias().isEmpty()) {
+            for (EvidenciaRequest evReq : request.getEvidencias()) {
                 EvidenciaIngreso ev = EvidenciaIngreso.builder()
                         .ingresoId(savedIngreso.getId())
-                        .tipoId(evReq.tipoId())
-                        .rutaArchivo(evReq.rutaArchivo())
+                        .tipoId(evReq.getTipoId())
+                        .rutaArchivo(evReq.getRutaArchivo())
                         .build();
                 evidenciaIngresoRepository.save(ev);
             }
@@ -117,7 +151,7 @@ public class IngresoService {
     }
 
     public Optional<Ingreso> findActivoByPlaca(String placa) {
-        return ingresoRepository.findFirstByPlacaActivo(placa);
+        return ingresoRepository.findFirstByPlacaActivo(placa.toUpperCase());
     }
 
     public IngresoDetalleResponse findDetalleById(Long id) {
@@ -244,49 +278,6 @@ public class IngresoService {
                 .evidencias(evResponses)
                 .usuarioRegistro(ingreso.getUsuarioRegistro())
                 .createdAt(ingreso.getCreatedAt())
-                .build();
-    }
-
-    private InventarioExterior mapToInventarioExterior(IngresoRequest.InventarioExteriorRequest req, Long ingresoId) {
-        return InventarioExterior.builder()
-                .ingresoId(ingresoId)
-                .parachoquesDelantero(boolOrDefault(req.parachoquesDelantero(), false))
-                .parachoquesTrasero(boolOrDefault(req.parachoquesTrasero(), false))
-                .puertas(boolOrDefault(req.puertas(), false))
-                .espejos(boolOrDefault(req.espejos(), false))
-                .vidrios(boolOrDefault(req.vidrios(), false))
-                .luces(boolOrDefault(req.luces(), false))
-                .llantas(boolOrDefault(req.llantas(), false))
-                .rayones(boolOrDefault(req.rayones(), false))
-                .golpes(boolOrDefault(req.golpes(), false))
-                .observaciones(req.observaciones())
-                .build();
-    }
-
-    private InventarioInterior mapToInventarioInterior(IngresoRequest.InventarioInteriorRequest req, Long ingresoId) {
-        return InventarioInterior.builder()
-                .ingresoId(ingresoId)
-                .tapiceria(boolOrDefault(req.tapiceria(), false))
-                .tablero(boolOrDefault(req.tablero(), false))
-                .radioPantalla(boolOrDefault(req.radioPantalla(), false))
-                .alfombras(boolOrDefault(req.alfombras(), false))
-                .cinturones(boolOrDefault(req.cinturones(), false))
-                .elementosPersonales(boolOrDefault(req.elementosPersonales(), false))
-                .observaciones(req.observaciones())
-                .build();
-    }
-
-    private InventarioSeguridad mapToInventarioSeguridad(IngresoRequest.InventarioSeguridadRequest req, Long ingresoId) {
-        return InventarioSeguridad.builder()
-                .ingresoId(ingresoId)
-                .llantaRepuesto(boolOrDefault(req.llantaRepuesto(), false))
-                .gato(boolOrDefault(req.gato(), false))
-                .cruceta(boolOrDefault(req.cruceta(), false))
-                .extintor(boolOrDefault(req.extintor(), false))
-                .botiquin(boolOrDefault(req.botiquin(), false))
-                .triangulos(boolOrDefault(req.triangulos(), false))
-                .herramientas(boolOrDefault(req.herramientas(), false))
-                .otros(req.otros())
                 .build();
     }
 

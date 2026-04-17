@@ -1,9 +1,19 @@
 package com.parkcontrol.common.dto.auth;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Builder
-public record LoginResponse(
-    String token,
-    String username,
-    String rol,
-    String nombre
-) {}
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginResponse {
+    private String token;
+    private String username;
+    private String rol;
+    private String nombre;
+}

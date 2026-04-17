@@ -1,17 +1,31 @@
 package com.parkcontrol.common.dto.salida;
 
-import com.parkcontrol.common.dto.ingreso.*;
+import com.parkcontrol.common.dto.ingreso.EvidenciaRequest;
+import com.parkcontrol.common.dto.ingreso.InventarioExteriorRequest;
+import com.parkcontrol.common.dto.ingreso.InventarioInteriorRequest;
+import com.parkcontrol.common.dto.ingreso.InventarioSeguridadRequest;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.List;
 
-public record SalidaRequest(
-    Long ingresoId,
-    String personaRetira,
-    String documentoRetira,
-    String observaciones,
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class SalidaRequest {
+    private Long ingresoId;
+    private String personaRetira;
+    private String documentoRetira;
+    private String observaciones;
 
-    InventarioExteriorRequest inventarioExterior,
-    InventarioInteriorRequest inventarioInterior,
-    InventarioSeguridadRequest inventarioSeguridad,
+    private InventarioExteriorRequest inventarioExterior;
+    private InventarioInteriorRequest inventarioInterior;
+    private InventarioSeguridadRequest inventarioSeguridad;
 
-    List<EvidenciaRequest> evidencias
-) {}
+    private List<EvidenciaRequest> evidencias;
+}

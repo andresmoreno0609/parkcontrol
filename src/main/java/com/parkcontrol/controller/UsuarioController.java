@@ -70,7 +70,7 @@ public class UsuarioController {
             @PathVariable Long id,
             @RequestBody CambiarEstadoRequest request) {
 
-        UsuarioResponse response = usuarioService.cambiarEstado(id, request.estado());
+        UsuarioResponse response = usuarioService.cambiarEstado(id, request.getEstado());
         return ResponseEntity.ok(response);
     }
 }

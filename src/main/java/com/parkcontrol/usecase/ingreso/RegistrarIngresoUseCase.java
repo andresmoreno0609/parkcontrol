@@ -14,31 +14,31 @@ public class RegistrarIngresoUseCase {
 
     public IngresoResponse execute(IngresoRequest request, String username) {
         // PreConditions - Validaciones
-        if (request.placa() == null || request.placa().isBlank()) {
+        if (request.getPlaca() == null || request.getPlaca().isBlank()) {
             throw new IllegalArgumentException("La placa es requerida");
         }
-        if (request.tipoVehiculo() == null || request.tipoVehiculo().isBlank()) {
+        if (request.getTipoVehiculo() == null || request.getTipoVehiculo().isBlank()) {
             throw new IllegalArgumentException("El tipo de vehículo es requerido");
         }
-        if (request.marca() == null || request.marca().isBlank()) {
+        if (request.getMarca() == null || request.getMarca().isBlank()) {
             throw new IllegalArgumentException("La marca es requerida");
         }
-        if (request.modelo() == null) {
+        if (request.getModelo() == null) {
             throw new IllegalArgumentException("El modelo es requerido");
         }
-        if (request.tipoDocumentoConductor() == null || request.tipoDocumentoConductor().isBlank()) {
+        if (request.getTipoDocumentoConductor() == null || request.getTipoDocumentoConductor().isBlank()) {
             throw new IllegalArgumentException("El tipo de documento del conductor es requerido");
         }
-        if (request.numeroDocumentoConductor() == null || request.numeroDocumentoConductor().isBlank()) {
+        if (request.getNumeroDocumentoConductor() == null || request.getNumeroDocumentoConductor().isBlank()) {
             throw new IllegalArgumentException("El número de documento del conductor es requerido");
         }
-        if (request.tipoAcceso() == null || request.tipoAcceso().isBlank()) {
+        if (request.getTipoAcceso() == null || request.getTipoAcceso().isBlank()) {
             throw new IllegalArgumentException("El tipo de acceso es requerido");
         }
-        if (request.firmaConductor() == null || !request.firmaConductor()) {
+        if (request.getFirmaConductor() == null || !request.getFirmaConductor()) {
             throw new IllegalArgumentException("La firma del conductor es requerida");
         }
-        if (request.firmaOperario() == null || !request.firmaOperario()) {
+        if (request.getFirmaOperario() == null || !request.getFirmaOperario()) {
             throw new IllegalArgumentException("La firma del operario es requerida");
         }
 

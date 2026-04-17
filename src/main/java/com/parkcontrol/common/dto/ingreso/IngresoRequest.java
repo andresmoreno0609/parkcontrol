@@ -1,35 +1,46 @@
 package com.parkcontrol.common.dto.ingreso;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.List;
 
-public record IngresoRequest(
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class IngresoRequest {
     // Datos del vehiculo
-    String placa,
-    String tipoVehiculo,
-    String marca,
-    Integer modelo,
-    String referencia,
-    String color,
-    String servicio,
+    private String placa;
+    private String tipoVehiculo;
+    private String marca;
+    private Integer modelo;
+    private String referencia;
+    private String color;
+    private String servicio;
 
     // Datos del conductor
-    String tipoDocumentoConductor,
-    String numeroDocumentoConductor,
+    private String tipoDocumentoConductor;
+    private String numeroDocumentoConductor;
 
     // Info parqueadero
-    String tipoAcceso,
-    String cupoAsignado,
-    String kilometraje,
-    String motivoIngreso,
-    String observaciones,
-    Boolean firmaConductor,
-    Boolean firmaOperario,
+    private String tipoAcceso;
+    private String cupoAsignado;
+    private String kilometraje;
+    private String motivoIngreso;
+    private String observaciones;
+    private Boolean firmaConductor;
+    private Boolean firmaOperario;
 
     // Inventarios
-    InventarioExteriorRequest inventarioExterior,
-    InventarioInteriorRequest inventarioInterior,
-    InventarioSeguridadRequest inventarioSeguridad,
+    private InventarioExteriorRequest inventarioExterior;
+    private InventarioInteriorRequest inventarioInterior;
+    private InventarioSeguridadRequest inventarioSeguridad;
 
     // Evidencias
-    List<EvidenciaRequest> evidencias
-) {}
+    private List<EvidenciaRequest> evidencias;
+}
