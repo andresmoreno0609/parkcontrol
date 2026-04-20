@@ -50,6 +50,10 @@ app:
     persona-url: http://localhost:9999/api/personas
     vehiculo-url: http://localhost:9999/api/vehiculos
     timeout: 5000
+    # Flags para habilitar/deshabilitar consultas externas
+    # Cambiar a false para deshabilitar y usar entrada manual
+    persona-enabled: true
+    vehiculo-enabled: true
   upload:
     path: ./uploads
     max-size: 10485760
